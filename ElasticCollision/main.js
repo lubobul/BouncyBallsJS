@@ -10,9 +10,11 @@ var cWidth = canvas.width;
 
 class Ball{
 
-    constructor(x, y, r, bouncyFactor, v_x, v_y, m, inCollision){
+    constructor(x, y, r, bouncyFactor, v_x, v_y, m){
         
-        this.inCollision = inCollision;
+        this.prev_x = 0;
+        this.prev_y = 0;
+
         this.x = x;
         this.y = y;
         this.v_y = v_y;
@@ -20,9 +22,15 @@ class Ball{
         this.bouncyFactor = bouncyFactor;
         this.radius = r;
         this.mass = m;
+
     }
 
     update(engine, i){
+
+        drawCircle(this.x, this.y, this.radius);
+
+        this.prev_x = this.x;
+        this.prev_y = this.y;
 
         this.v_y += EARTH_ACCELERATION * engine.deltaTime;
         this.y += this.v_y * engine.deltaTime;
@@ -54,14 +62,13 @@ class Ball{
 
         collision(i);
 
-        drawCircle(this.x, this.y, this.radius, true);
     }
 }
 
 function collision(i){
     
     let b0 = balls[i];
-    let newBall = new Ball(b0.x, b0.y, b0.radius, b0.bouncyFactor, b0.v_x, b0.v_y, b0.mass, b0.inCollision);
+    let newBall = new Ball(b0.x, b0.y, b0.radius, b0.bouncyFactor, b0.v_x, b0.v_y, b0.mass);
 
     let outsideOfCollisionCounter = 0;
 
@@ -71,7 +78,7 @@ function collision(i){
         
             let b1 = balls[j];
 
-            if(distance(b0.x, b0.y, b1.x, b1.y) <= b0.radius + b1.radius && !b0.inCollision){
+            if(distance(b0.x, b0.y, b1.x, b1.y) <= b0.radius + b1.radius){
 
                 newBall.inCollision = true;
                 
@@ -87,18 +94,13 @@ function collision(i){
                                 
                 newBall.v_y = ((b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
                                 * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
+                
+                newBall.x = b0.prev_x;
+                newBall.y = b0.prev_y;
                                 
-            }else if (distance(b0.x, b0.y, b1.x, b1.y) > b0.radius + b1.radius){
-
-                outsideOfCollisionCounter++;
             }
 
         }
-    }
-
-    if(outsideOfCollisionCounter == balls.length -1){
-
-        newBall.inCollision = false;
     }
     
     tmpBalls.push(newBall);
@@ -121,9 +123,11 @@ function setup(){
     // balls.push(ball2);
 
 
-    for(let i =0; i < 5; i++){
+    for(let i =1; i <= 5; i++){
 
-        balls.push(new Ball(60*i, 100, 20, 0.94, random(-300, 300), 0, 1));
+        let radius = random(10, 20);
+
+        balls.push(new Ball((cWidth/i) +  6*radius, 100, radius, 0.94, randomNegativePositive(0, 300), 0, 1));
     }
 }
 
@@ -147,8 +151,5 @@ function update(){
 
     tmpBalls = [];
 }
-
-
-
 
 setup();

@@ -4,7 +4,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
         <meta name="viewport" content="width=device-width" />
 
-        <title>Bouncy balls</title>
+        <title>Bouncy balls with camera</title>
     </head>
 
     <body>
@@ -12,11 +12,12 @@
         
         </style>
 
-        <canvas width="800" height="600" id="canvas"></canvas>
+        <video style="display: none;" id="video" width="800" height="600" autoplay></video>
+        <canvas style="transform:scaleX(-1);" width="800" height="600" id="canvas"></canvas>
     </body>
     
-    <script src="./utils.js"></script>
-    <script src="./animationEngine.js"></script>
+    <script src="../utils.js"></script>
+    <script src="../animationEngine.js"></script>
     <script src="./main.js"></script>
 
 </html>

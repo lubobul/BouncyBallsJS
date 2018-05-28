@@ -113,16 +113,15 @@ function distance(x0, y0, x1, y1){
  * @param {*} y 
  * @param {*} radius 
  */
-function drawCircle(x, y, radius, fill){
+function drawCircle(x, y, radius){
     context.fillStyle = 'gray';
     context.lineWidth = 5;
     context.strokeStyle = 'green';
 
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI, false);
-    if(fill){
-        context.fill();
-    }
+
+    context.fill();
 
     context.stroke();
 }
@@ -209,14 +208,16 @@ function max(x0, x1){
     return x0;
 }
 
-function random(from, to){
+function random(min, max){
 
-    return Math.floor((Math.random() * to) + from);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function randomFloat(from, to){
+function randomNegativePositive(min, max){
 
-    return Math.random() * (from -to) + from;
+    let num = Math.floor(Math.random() * (max - min + 1)) + min;
+    num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+    return num;
 }
 
 function cartesianToPolar(x, y)
