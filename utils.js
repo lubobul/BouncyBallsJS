@@ -115,7 +115,7 @@ function distance(x0, y0, x1, y1){
  */
 function drawCircle(x, y, radius){
     context.fillStyle = 'gray';
-    context.lineWidth = 5;
+    context.lineWidth = 1;
     context.strokeStyle = 'green';
 
     context.beginPath();

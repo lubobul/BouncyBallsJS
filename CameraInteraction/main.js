@@ -6,15 +6,14 @@ animationEngine.setAnimationFrameCallback(update);
 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     // audio: false - since we only want video
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(function (stream) {
-        setup();
+        setTimeout(setup, 2000);
+        animationEngine.start();
         video.srcObject = stream;
     });
 }
 
 
 //Declare some global vars
-var width = 800;
-var height = 600;
 var motionColorThreshold = Math.pow(100, 2); //0-255
 var oldImageData = null;
 var imageData = null;
@@ -24,6 +23,8 @@ var EARTH_FRICTION_FACTOR = 0.95;
 
 var cHeight = canvas.height;
 var cWidth = canvas.width;
+
+var MOTION_TO_BALL_DISTANCE_THRESHOLD = 100;
 
 class Ball{
 
@@ -49,10 +50,24 @@ class Ball{
         this.prev_x = this.x;
         this.prev_y = this.y;
 
+        //here we transfer velocity from motion in camera to ball
+        if(distance(this.x, this.y, blob.x, blob.y) < MOTION_TO_BALL_DISTANCE_THRESHOLD && blob.prev_x + blob.prev_y > 0){
+
+            let d_x = blob.x - blob.prev_x;
+            let d_y = blob.y - blob.prev_y;
+
+            blob.v_x = d_x / engine.deltaTime;
+            blob.v_y = d_y / engine.deltaTime; 
+
+            this.v_x += blob.v_x;
+            this.v_y += blob.v_y;
+        }
+
         this.v_y += EARTH_ACCELERATION * engine.deltaTime;
         this.y += this.v_y * engine.deltaTime;
         this.x += this.v_x * engine.deltaTime;
 
+        //bottom
         if(this.y >= cHeight - this.radius){
 
             this.v_y = -this.v_y * this.bouncyFactor;
@@ -60,17 +75,21 @@ class Ball{
             this.y = cHeight - this.radius;
 
             this.v_x = this.v_x * EARTH_FRICTION_FACTOR;
-
+        
+        //top
         }else if(this.y <= this.radius){
 
             this.v_y = -this.v_y * this.bouncyFactor;
+            this.y = this.radius;
         }
 
+        //left
         if(this.x <= this.radius ){
 
             this.v_x = -this.v_x * this.bouncyFactor;
             this.x = this.radius;
-        
+
+        //right
         }else if(this.x >= cWidth - this.radius){
             
             this.v_x = -this.v_x * this.bouncyFactor;
@@ -128,33 +147,24 @@ var balls = [];
 var tmpBalls = [];
 
 function setup(){
-    animationEngine.start();
 
-    // let ball0 = new Ball(100, 100, 20, 0.93, random(-300, 300), 0, 1, false);
-    // balls.push(ball0);
+    let maxRadius = 30;
 
-    // let ball1 = new Ball(200, 100, 20, 0.95, random(-300, 300), 0, 1, false);
-    // balls.push(ball1);
+    for(let i =1; i <= 1; i++){
 
-    // let ball2 = new Ball(300, 100, 20, 0.94, random(-300, 300), 0, 1, false);
-    // balls.push(ball2);
+        let radius = random(20, maxRadius);
 
-
-    for(let i =1; i <= 5; i++){
-
-        let radius = random(10, 20);
-
-        balls.push(new Ball((cWidth/i) +  6*radius, 100, radius, 0.94, randomNegativePositive(0, 300), 0, 1));
+        balls.push(new Ball(cWidth - (maxRadius*2)*i , cHeight - 100, radius, 0.8, randomNegativePositive(0, 300), 0, 1));
     }
 }
 
 
 function update(){
 
-    context.drawImage(video, 0, 0, width, height);
+    context.drawImage(video, 0, 0, cWidth, cHeight);
 
     //acquire bitmap
-    var imageData = context.getImageData(0, 0, width, height);
+    var imageData = context.getImageData(0, 0, cWidth, cHeight);
 
     if(!oldImageData){
         
@@ -163,7 +173,7 @@ function update(){
 
     traverseBitmap(imageData.data, oldImageData.data);
 
-    oldImageData = context.getImageData(0, 0, width, height);
+    oldImageData = context.getImageData(0, 0, cWidth, cHeight);
 
      // Draw the ImageData at the given (x,y) coordinates.
     context.putImageData(imageData, 0, 0);
@@ -183,25 +193,37 @@ function update(){
     tmpBalls = [];
 }
 
+
+var blob = new Ball(0,0,0,0,0,0,0);
+
 function traverseBitmap(pixels, oldPixels) {
 
-    //increment for loops with x/y += 4, because in bitmapt [0]-R, [1]-G, [2]-B, [3]-Alpha channel
-    for (let x = 0; x < width; x++) {
-        for (let y = 0; y < height; y++) {
+    let foundPixels = 0;
+    
+    blob.prev_x = blob.x;
+    blob.prev_y = blob.y;
 
-            let pixIndex = (x + y * width) *4; 
+    blob.x = 0;
+    blob.y = 0;
+
+    //increment for loops with x/y += 4, because in bitmapt [0]-R, [1]-G, [2]-B, [3]-Alpha channel
+    for (let x = 0; x < cWidth; x++) {
+        for (let y = 0; y < cHeight; y++) {
+
+            let pixIndex = (x + y * cWidth) *4; 
                 
             let colorDistance = rgbDistance(
                 pixels[pixIndex], 
                 pixels[pixIndex +1], 
                 pixels[pixIndex +2],
+
                 oldPixels[pixIndex],
                 oldPixels[pixIndex + 1],
                 oldPixels[pixIndex + 2]);
                 
             //check if tracked color is within the Threshold 
             if (colorDistance < motionColorThreshold) {
-                    
+               
                 //set tracked color to white (easier to see what's happening)
                 pixels[pixIndex    ] = 255; // red
                 pixels[pixIndex + 1] = 255; // green
@@ -212,7 +234,18 @@ function traverseBitmap(pixels, oldPixels) {
                 pixels[pixIndex    ] = 0; // red
                 pixels[pixIndex + 1] = 0; // green
                 pixels[pixIndex + 2] = 0; // blue
+
+                foundPixels++;
+                blob.x += x;
+                blob.y += y;
             }
         }
     }
+
+    if(foundPixels > 100){
+
+        blob.x = (blob.x / foundPixels);
+        blob.y = (blob.y / foundPixels);
+    }
+
 }

@@ -47,6 +47,7 @@ class Ball{
         }else if(this.y <= this.radius){
 
             this.v_y = -this.v_y * this.bouncyFactor;
+            this.y = this.radius;
         }
 
         if(this.x <= this.radius ){
@@ -113,28 +114,20 @@ var tmpBalls = [];
 function setup(){
     animationEngine.start();
 
-    // let ball0 = new Ball(100, 100, 20, 0.93, random(-300, 300), 0, 1, false);
-    // balls.push(ball0);
+    let maxRadius = 20;
 
-    // let ball1 = new Ball(200, 100, 20, 0.95, random(-300, 300), 0, 1, false);
-    // balls.push(ball1);
+    for(let i =1; i <= 20; i++){
 
-    // let ball2 = new Ball(300, 100, 20, 0.94, random(-300, 300), 0, 1, false);
-    // balls.push(ball2);
+        let radius = random(10, maxRadius);
 
-
-    for(let i =1; i <= 5; i++){
-
-        let radius = random(10, 20);
-
-        balls.push(new Ball((cWidth/i) +  6*radius, 100, radius, 0.94, randomNegativePositive(0, 300), 0, 1));
+        balls.push(new Ball(cWidth - (maxRadius*2)*i , 100, radius, 0.94, randomNegativePositive(0, 300), 0, 1));
     }
 }
 
 
 function update(){
 
-    clearCanvas();
+    //clearCanvas();
     fillRect(0, 0, cWidth, cHeight);
     
     for(let i =0; i< balls.length; i++){
