@@ -80,8 +80,6 @@ function collision(i){
             let b1 = balls[j];
 
             if(distance(b0.x, b0.y, b1.x, b1.y) <= b0.radius + b1.radius){
-
-                newBall.inCollision = true;
                 
                 let b0_v = scalarSize(b0.v_x, b0.v_y);
                 let b1_v = scalarSize(b1.v_x, b1.v_y);
@@ -127,8 +125,7 @@ function setup(){
 
 function update(){
 
-    //clearCanvas();
-    fillRect(0, 0, cWidth, cHeight);
+    clearCanvas();
     
     for(let i =0; i< balls.length; i++){
 

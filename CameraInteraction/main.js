@@ -14,7 +14,7 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 
 
 //Declare some global vars
-var motionColorThreshold = Math.pow(100, 2); //0-255
+var motionColorThreshold = Math.pow(60, 2); //0-255
 var oldImageData = null;
 var imageData = null;
 
@@ -24,7 +24,7 @@ var EARTH_FRICTION_FACTOR = 0.95;
 var cHeight = canvas.height;
 var cWidth = canvas.width;
 
-var MOTION_TO_BALL_DISTANCE_THRESHOLD = 100;
+var MOTION_VELOCITY_THRESHOLD = 1000;
 
 class Ball{
 
@@ -51,7 +51,7 @@ class Ball{
         this.prev_y = this.y;
 
         //here we transfer velocity from motion in camera to ball
-        if(distance(this.x, this.y, blob.x, blob.y) < MOTION_TO_BALL_DISTANCE_THRESHOLD && blob.prev_x + blob.prev_y > 0){
+        if(distance(this.x, this.y, blob.x, blob.y) < 4 * this.radius && blob.prev_x + blob.prev_y > 0){
 
             let d_x = blob.x - blob.prev_x;
             let d_y = blob.y - blob.prev_y;
@@ -59,8 +59,25 @@ class Ball{
             blob.v_x = d_x / engine.deltaTime;
             blob.v_y = d_y / engine.deltaTime; 
 
-            this.v_x += blob.v_x;
-            this.v_y += blob.v_y;
+            if(Math.pow(blob.v_x, 2) + Math.pow(blob.v_y, 2) < Math.pow(MOTION_VELOCITY_THRESHOLD, 2)){
+                
+                this.v_x += blob.v_x;
+                this.v_y += blob.v_y;
+
+                //let b0_v = scalarSize(this.v_x, this.v_y);
+                //let b1_v = scalarSize(blob.v_x, blob.v_y);
+                
+                //let phi = cartesianToPolar(this.x - blob.x, this.y - blob.y).t;
+                //let tetha0 = cartesianToPolar(this.v_x, this.v_y).t;
+                //let tetha1 = cartesianToPolar(blob.v_x, blob.v_y).t;
+                //
+                //this.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) ) 
+                //                * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
+                //                
+                //this.v_y = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) )  
+                //                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
+            }
+                
         }
 
         this.v_y += EARTH_ACCELERATION * engine.deltaTime;
@@ -115,8 +132,6 @@ function collision(i){
             let b1 = balls[j];
 
             if(distance(b0.x, b0.y, b1.x, b1.y) <= b0.radius + b1.radius){
-
-                newBall.inCollision = true;
                 
                 let b0_v = scalarSize(b0.v_x, b0.v_y);
                 let b1_v = scalarSize(b1.v_x, b1.v_y);
@@ -194,7 +209,7 @@ function update(){
 }
 
 
-var blob = new Ball(0,0,0,0,0,0,0);
+var blob = new Ball(0,0,0,0,0,0,1);
 
 function traverseBitmap(pixels, oldPixels) {
 
@@ -222,14 +237,8 @@ function traverseBitmap(pixels, oldPixels) {
                 oldPixels[pixIndex + 2]);
                 
             //check if tracked color is within the Threshold 
-            if (colorDistance < motionColorThreshold) {
+            if (colorDistance > motionColorThreshold) {
                
-                //set tracked color to white (easier to see what's happening)
-                pixels[pixIndex    ] = 255; // red
-                pixels[pixIndex + 1] = 255; // green
-                pixels[pixIndex + 2] = 255; // blue
-            }else{
-
                 //set tracked color to white (easier to see what's happening)
                 pixels[pixIndex    ] = 0; // red
                 pixels[pixIndex + 1] = 0; // green
@@ -238,6 +247,14 @@ function traverseBitmap(pixels, oldPixels) {
                 foundPixels++;
                 blob.x += x;
                 blob.y += y;
+
+            }else{
+                
+                //set tracked color to white (easier to see what's happening)
+                pixels[pixIndex    ] = 255; // red
+                pixels[pixIndex + 1] = 255; // green
+                pixels[pixIndex + 2] = 255; // blue
+                
             }
         }
     }
