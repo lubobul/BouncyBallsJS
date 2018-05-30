@@ -18,13 +18,13 @@ var motionColorThreshold = Math.pow(60, 2); //0-255
 var oldImageData = null;
 var imageData = null;
 
-var EARTH_ACCELERATION = 500; //m/s  pixel = meter
+var EARTH_ACCELERATION = 400; //m/s  pixel = meter
 var EARTH_FRICTION_FACTOR = 0.95;
 
 var cHeight = canvas.height;
 var cWidth = canvas.width;
 
-var MOTION_VELOCITY_THRESHOLD = 1000;
+var MOTION_VELOCITY_THRESHOLD = 200;
 
 class Ball{
 
@@ -59,24 +59,24 @@ class Ball{
             blob.v_x = d_x / engine.deltaTime;
             blob.v_y = d_y / engine.deltaTime; 
 
-            if(Math.pow(blob.v_x, 2) + Math.pow(blob.v_y, 2) < Math.pow(MOTION_VELOCITY_THRESHOLD, 2)){
-                
-                this.v_x += blob.v_x;
-                this.v_y += blob.v_y;
+            //clamping motion velocity  
+            this.v_x += (min(Math.abs(blob.v_x), MOTION_VELOCITY_THRESHOLD) * Math.sign(blob.v_x));
+            this.v_y += (min(Math.abs(blob.v_y), MOTION_VELOCITY_THRESHOLD) * Math.sign(blob.v_y));
+            
 
-                //let b0_v = scalarSize(this.v_x, this.v_y);
-                //let b1_v = scalarSize(blob.v_x, blob.v_y);
-                
-                //let phi = cartesianToPolar(this.x - blob.x, this.y - blob.y).t;
-                //let tetha0 = cartesianToPolar(this.v_x, this.v_y).t;
-                //let tetha1 = cartesianToPolar(blob.v_x, blob.v_y).t;
-                //
-                //this.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) ) 
-                //                * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
-                //                
-                //this.v_y = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) )  
-                //                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
-            }
+            //Alternative - Use this for transfering velocity via elastic collision
+            //let b0_v = scalarSize(this.v_x, this.v_y);
+            //let b1_v = scalarSize(blob.v_x, blob.v_y);
+            //let phi = cartesianToPolar(this.x - blob.x, this.y - blob.y).t;
+            //let tetha0 = cartesianToPolar(this.v_x, this.v_y).t;
+            //let tetha1 = cartesianToPolar(blob.v_x, blob.v_y).t;
+            //
+            //this.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) ) 
+            //                * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
+            //                
+            //this.v_y = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) )  
+            //                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
+           
                 
         }
 
@@ -148,6 +148,8 @@ function collision(i){
                 
                 newBall.x = b0.prev_x;
                 newBall.y = b0.prev_y;
+                b0.x = b0.prev_x;
+                b0.y = b0.prev_y;
                                 
             }
 
@@ -165,7 +167,7 @@ function setup(){
 
     let maxRadius = 30;
 
-    for(let i =1; i <= 1; i++){
+    for(let i =1; i <= 10; i++){
 
         let radius = random(20, maxRadius);
 
@@ -209,7 +211,7 @@ function update(){
 }
 
 
-var blob = new Ball(0,0,0,0,0,0,1);
+var blob = new Ball(0,0,30,0,0,0,1);
 
 function traverseBitmap(pixels, oldPixels) {
 
@@ -240,7 +242,7 @@ function traverseBitmap(pixels, oldPixels) {
             if (colorDistance > motionColorThreshold) {
                
                 //set tracked color to white (easier to see what's happening)
-                pixels[pixIndex    ] = 0; // red
+                pixels[pixIndex    ] = 255; // red
                 pixels[pixIndex + 1] = 0; // green
                 pixels[pixIndex + 2] = 0; // blue
 

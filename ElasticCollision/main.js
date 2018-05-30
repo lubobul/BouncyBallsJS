@@ -96,7 +96,8 @@ function collision(i){
                 
                 newBall.x = b0.prev_x;
                 newBall.y = b0.prev_y;
-                                
+                b0.x = b0.prev_x;
+                b0.y = b0.prev_y;
             }
 
         }
@@ -114,7 +115,7 @@ function setup(){
 
     let maxRadius = 20;
 
-    for(let i =1; i <= 20; i++){
+    for(let i =1; i <= 40; i++){
 
         let radius = random(10, maxRadius);
 
