@@ -24,7 +24,8 @@ var EARTH_FRICTION_FACTOR = 0.95;
 var cHeight = canvas.height;
 var cWidth = canvas.width;
 
-var MOTION_VELOCITY_THRESHOLD = 200;
+var MOTION_MAX_VELOCITY = 300;
+var BLOB_MIN_SIZE = 100;
 
 class Ball{
 
@@ -43,6 +44,11 @@ class Ball{
 
     }
 
+    /**
+     * Called once per frame, updates the crrent object based on dt
+     * @param {*} engine 
+     * @param {*} i 
+     */
     update(engine, i){
 
         drawCircle(this.x, this.y, this.radius);
@@ -51,7 +57,7 @@ class Ball{
         this.prev_y = this.y;
 
         //here we transfer velocity from motion in camera to ball
-        if(distance(this.x, this.y, blob.x, blob.y) < 4 * this.radius && blob.prev_x + blob.prev_y > 0){
+        if(distance(this.x, this.y, blob.x, blob.y) < 4 * this.radius && blob.prev_x + blob.prev_y > 0 && blob.x + blob.y > 0){
 
             let d_x = blob.x - blob.prev_x;
             let d_y = blob.y - blob.prev_y;
@@ -60,8 +66,8 @@ class Ball{
             blob.v_y = d_y / engine.deltaTime; 
 
             //clamping motion velocity  
-            this.v_x += (min(Math.abs(blob.v_x), MOTION_VELOCITY_THRESHOLD) * Math.sign(blob.v_x));
-            this.v_y += (min(Math.abs(blob.v_y), MOTION_VELOCITY_THRESHOLD) * Math.sign(blob.v_y));
+            this.v_x += (min(Math.abs(blob.v_x), MOTION_MAX_VELOCITY) * Math.sign(blob.v_x));
+            this.v_y += (min(Math.abs(blob.v_y), MOTION_MAX_VELOCITY) * Math.sign(blob.v_y));
             
 
             //Alternative - Use this for transfering velocity via elastic collision
@@ -76,8 +82,6 @@ class Ball{
             //                
             //this.v_y = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) )  
             //                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
-           
-                
         }
 
         this.v_y += EARTH_ACCELERATION * engine.deltaTime;
@@ -118,6 +122,10 @@ class Ball{
     }
 }
 
+/**
+ * Detect collision 
+ * @param {*} i
+ */
 function collision(i){
     
     let b0 = balls[i];
@@ -163,6 +171,9 @@ function collision(i){
 var balls = [];
 var tmpBalls = [];
 
+/**
+ * Setups the app
+ */
 function setup(){
 
     let maxRadius = 30;
@@ -175,7 +186,9 @@ function setup(){
     }
 }
 
-
+/**
+ * Give to AnimationEngine callback, called once per frame
+ */
 function update(){
 
     context.drawImage(video, 0, 0, cWidth, cHeight);
@@ -210,9 +223,14 @@ function update(){
     tmpBalls = [];
 }
 
-
+//Blob holding motion detection
 var blob = new Ball(0,0,30,0,0,0,1);
 
+/**
+ * Traverse old vs new camera frame pixels and acquire delta
+ * @param {*} pixels 
+ * @param {*} oldPixels 
+ */
 function traverseBitmap(pixels, oldPixels) {
 
     let foundPixels = 0;
@@ -261,7 +279,7 @@ function traverseBitmap(pixels, oldPixels) {
         }
     }
 
-    if(foundPixels > 100){
+    if(foundPixels > BLOB_MIN_SIZE){
 
         blob.x = (blob.x / foundPixels);
         blob.y = (blob.y / foundPixels);
