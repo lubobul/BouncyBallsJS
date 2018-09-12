@@ -38,31 +38,6 @@ class Ball{
         this.y += this.v_y * delta_t;
         this.x += this.v_x * delta_t;
 
-        if(this.y >= cHeight - this.radius){
-
-            this.v_y = -this.v_y * this.bouncyFactor;
-            //force set away from colision
-            this.y = cHeight - this.radius;
-
-            this.v_x = this.v_x * EARTH_FRICTION_FACTOR;
-
-        }else if(this.y <= this.radius){
-
-            this.v_y = -this.v_y * this.bouncyFactor;
-            this.y = this.radius;
-        }
-
-        if(this.x <= this.radius ){
-
-            this.v_x = -this.v_x * this.bouncyFactor;
-            this.x = this.radius;
-        
-        }else if(this.x >= cWidth - this.radius){
-            
-            this.v_x = -this.v_x * this.bouncyFactor;
-            this.x = cWidth - this.radius;
-        }
-
         collision(i);
 
     }
@@ -107,8 +82,8 @@ function collision(i){
                 
                 //taking the angle of movement before collision, dx and dy within dt
                 let polarDistance = cartesianToPolar(b0.x - b0.prev_x, b0.y - b0.prev_y);
-                //taking distance for x and y to impact
-                let x_y_to_collide = polarToCartesian(polarDistance.r - intersection, polarDistance.t);
+                //taking distance for x and y to impact, substracting 1 from the distance to make sure no secondary collision will be detected
+                let x_y_to_collide = polarToCartesian(polarDistance.r - intersection - 1, polarDistance.t);
 
                 //assigning true coordinates of collision (moment of "physica" impact)
                 newBall.x = b0.prev_x + x_y_to_collide.x;
@@ -128,6 +103,33 @@ function collision(i){
                 b0.y = b0.y + x_y_bounced.y;
             }
         }
+    }
+
+    //floor
+    if(newBall.y >= cHeight - newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        //force set away from colision
+        newBall.y = cHeight - newBall.radius;
+
+        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
+    //ceiling
+    }else if(newBall.y <= newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        newBall.y = newBall.radius;
+    }
+    //left wall
+    if(newBall.x <= newBall.radius ){
+
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = newBall.radius;
+    
+    //right wall
+    }else if(newBall.x >= cWidth - newBall.radius){
+        
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = cWidth - newBall.radius;
     }
     
     //add new object to the new collection
