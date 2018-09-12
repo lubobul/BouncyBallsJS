@@ -52,6 +52,33 @@ function collision(i){
     interact with it in its original movement state*/
     let newBall = new Ball(b0.x, b0.y, b0.radius, b0.bouncyFactor, b0.v_x, b0.v_y, b0.mass);
 
+    //floor
+    if(newBall.y >= cHeight - newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        //force set away from colision
+        newBall.y = cHeight - newBall.radius;
+
+        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
+    //ceiling
+    }else if(newBall.y <= newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        newBall.y = newBall.radius + 1;
+    }
+    //left wall
+    if(newBall.x <= newBall.radius ){
+
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = newBall.radius + 1;
+    
+    //right wall
+    }else if(newBall.x >= cWidth - newBall.radius){
+        
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = cWidth - newBall.radius - 1;
+    }
+
     for(var j =0; j< balls.length; j++){
         
         //don't interact with self
@@ -71,7 +98,7 @@ function collision(i){
                 let tetha1 = cartesianToPolar(b1.v_x, b1.v_y).t;
 
                 //here we obtain new velocities based on elastic collision between moving object b0 and pseudo static object b1
-                newBall.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
+                newBall.v_x = ((b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
                                 * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
                                 
                 newBall.v_y = ((b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
@@ -105,32 +132,7 @@ function collision(i){
         }
     }
 
-    //floor
-    if(newBall.y >= cHeight - newBall.radius){
-
-        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
-        //force set away from colision
-        newBall.y = cHeight - newBall.radius;
-
-        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
-    //ceiling
-    }else if(newBall.y <= newBall.radius){
-
-        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
-        newBall.y = newBall.radius;
-    }
-    //left wall
-    if(newBall.x <= newBall.radius ){
-
-        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
-        newBall.x = newBall.radius;
     
-    //right wall
-    }else if(newBall.x >= cWidth - newBall.radius){
-        
-        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
-        newBall.x = cWidth - newBall.radius;
-    }
     
     //add new object to the new collection
     tmpBalls.push(newBall);
