@@ -224,7 +224,12 @@ function cartesianToPolar(x, y)
 {
     var r = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
     var t = Math.atan2(y, x);
-    return { r, t }
+    return { r, t };
+}
+
+function polarToCartesian(r, tetha){
+
+    return {x: r * Math.cos(tetha), y: r * Math.sin(tetha) };
 }
 
 function scalarSize(v_x, v_y){
