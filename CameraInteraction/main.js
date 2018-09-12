@@ -4,11 +4,14 @@ animationEngine.setAnimationFrameCallback(update);
 
 // Get access to the camera
 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+
     // audio: false - since we only want video
     navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(function (stream) {
         setTimeout(setup, 2000);
         animationEngine.start();
         video.srcObject = stream;
+    }, function(){
+        alert("Camera not found!");
     });
 }
 
