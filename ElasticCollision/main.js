@@ -128,12 +128,13 @@ function collision(i){
                 newBall.y = newBall.y + x_y_bounced.y;
                 b0.x = b0.x + x_y_bounced.x;;
                 b0.y = b0.y + x_y_bounced.y;
+
+                newBall.v_x = newBall.v_x * newBall.bouncyFactor;
+                newBall.v_y = newBall.v_y * newBall.bouncyFactor;
             }
         }
     }
 
-    
-    
     //add new object to the new collection
     tmpBalls.push(newBall);
 }
@@ -146,13 +147,16 @@ var tmpBalls = [];
 function setup(){
     animationEngine.start();
 
-    let maxRadius = 20;
+    let itterations = 100;
+    let maxRadius = 5;
+    let spacePerBall = cWidth / itterations;
+    let ballX = 0;
 
-    for(let i =1; i <= 15; i++){
+    for(let i =1; i <= itterations; i++){
 
-        let radius = random(10, maxRadius);
+        let radius = random(2, maxRadius);
 
-        balls.push(new Ball(cWidth - (maxRadius*2)*i , 100, radius, 0.94, randomNegativePositive(0, 300), 0, 1));
+        balls.push(new Ball(ballX += spacePerBall , 100, radius, 0.8, randomNegativePositive(0, 300), 0, 1 * radius));
     }
 }
 
