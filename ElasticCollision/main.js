@@ -156,7 +156,7 @@ function setup(){
 
         let radius = random(2, maxRadius);
 
-        balls.push(new Ball(ballX += spacePerBall , 100, radius, 0.8, randomNegativePositive(0, 300), 0, 1 * radius));
+        balls.push(new Ball(ballX += spacePerBall , 100, radius, 0.9, randomNegativePositive(0, 300), 0, 1 * radius));
     }
 }
 

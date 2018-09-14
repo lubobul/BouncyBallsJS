@@ -48,78 +48,20 @@ class Ball{
     }
 
     /**
-     * Called once per frame, updates the crrent object based on dt
-     * @param {*} engine 
+     * Called once per frame, updates the crrent object based on dt 
      * @param {*} i 
      */
-    update(engine, i){
+    update(i){
 
         drawCircle(this.x, this.y, this.radius);
 
         this.prev_x = this.x;
         this.prev_y = this.y;
 
-        //here we transfer velocity from motion in camera to ball
-        if(distance(this.x, this.y, blob.x, blob.y) < 4 * this.radius && blob.prev_x + blob.prev_y > 0 && blob.x + blob.y > 0){
-
-            let d_x = blob.x - blob.prev_x;
-            let d_y = blob.y - blob.prev_y;
-
-            blob.v_x = d_x / engine.deltaTime;
-            blob.v_y = d_y / engine.deltaTime; 
-
-            //clamping motion velocity  
-            this.v_x += (min(Math.abs(blob.v_x), MOTION_MAX_VELOCITY) * Math.sign(blob.v_x));
-            this.v_y += (min(Math.abs(blob.v_y), MOTION_MAX_VELOCITY) * Math.sign(blob.v_y));
-            
-
-            //Alternative - Use this for transfering velocity via elastic collision
-            //let b0_v = scalarSize(this.v_x, this.v_y);
-            //let b1_v = scalarSize(blob.v_x, blob.v_y);
-            //let phi = cartesianToPolar(this.x - blob.x, this.y - blob.y).t;
-            //let tetha0 = cartesianToPolar(this.v_x, this.v_y).t;
-            //let tetha1 = cartesianToPolar(blob.v_x, blob.v_y).t;
-            //
-            //this.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) ) 
-            //                * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
-            //                
-            //this.v_y = ( (b0_v * Math.cos(tetha0 - phi) * (this.mass - blob.mass) + (2 * blob.mass * b1_v * Math.cos(tetha1 - phi) )) / (this.mass + blob.mass) )  
-            //                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
-        }
-
-        this.v_y += EARTH_ACCELERATION * engine.deltaTime;
-        this.y += this.v_y * engine.deltaTime;
-        this.x += this.v_x * engine.deltaTime;
-
-        //bottom
-        if(this.y >= cHeight - this.radius){
-
-            this.v_y = -this.v_y * this.bouncyFactor;
-            //force set away from colision
-            this.y = cHeight - this.radius;
-
-            this.v_x = this.v_x * EARTH_FRICTION_FACTOR;
-        
-        //top
-        }else if(this.y <= this.radius){
-
-            this.v_y = -this.v_y * this.bouncyFactor;
-            this.y = this.radius;
-        }
-
-        //left
-        if(this.x <= this.radius ){
-
-            this.v_x = -this.v_x * this.bouncyFactor;
-            this.x = this.radius;
-
-        //right
-        }else if(this.x >= cWidth - this.radius){
-            
-            this.v_x = -this.v_x * this.bouncyFactor;
-            this.x = cWidth - this.radius;
-        }
-
+        this.v_y += EARTH_ACCELERATION * animationEngine.deltaTime;
+        this.y += this.v_y * animationEngine.deltaTime;
+        this.x += this.v_x * animationEngine.deltaTime;
+     
         collision(i);
 
     }
@@ -134,7 +76,47 @@ function collision(i){
     let b0 = balls[i];
     let newBall = new Ball(b0.x, b0.y, b0.radius, b0.bouncyFactor, b0.v_x, b0.v_y, b0.mass);
 
-    let outsideOfCollisionCounter = 0;
+     //floor
+    if(newBall.y >= cHeight - newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        //force set away from colision
+        newBall.y = cHeight - newBall.radius;
+
+        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
+    //ceiling
+    }else if(newBall.y <= newBall.radius){
+
+        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
+        newBall.y = newBall.radius + 1;
+    }
+    //left wall
+    if(newBall.x <= newBall.radius ){
+
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = newBall.radius + 1;
+    
+    //right wall
+    }else if(newBall.x >= cWidth - newBall.radius){
+        
+        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
+        newBall.x = cWidth - newBall.radius - 1;
+    }
+
+    //here we transfer velocity from motion in camera to ball
+    if(distance(newBall.x, newBall.y, blob.x, blob.y) < 4 * newBall.radius && blob.prev_x + blob.prev_y > 0 && blob.x + blob.y > 0){
+
+        let d_x = blob.x - blob.prev_x;
+        let d_y = blob.y - blob.prev_y;
+        
+        blob.v_x = d_x / animationEngine.deltaTime;
+        blob.v_y = d_y / animationEngine.deltaTime; 
+        
+        //clamping motion velocity  
+        newBall.v_x += (min(Math.abs(blob.v_x), MOTION_MAX_VELOCITY) * Math.sign(blob.v_x));
+        newBall.v_y += (min(Math.abs(blob.v_y), MOTION_MAX_VELOCITY) * Math.sign(blob.v_y));
+        
+    }
 
     for(var j =0; j< balls.length; j++){
         
@@ -157,13 +139,12 @@ function collision(i){
                 newBall.v_y = ((b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
                                 * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
                 
+                //Using simple restoration of coordinates after collision, because the proper one doesn't work well with the blob
                 newBall.x = b0.prev_x;
                 newBall.y = b0.prev_y;
                 b0.x = b0.prev_x;
-                b0.y = b0.prev_y;
-                                
+                b0.y = b0.prev_y;                   
             }
-
         }
     }
     
@@ -178,14 +159,18 @@ var tmpBalls = [];
  * Setups the app
  */
 function setup(){
+    animationEngine.start();
 
-    let maxRadius = 30;
+    let itterations = 5;
+    let maxRadius = 25;
+    let spacePerBall = cWidth / itterations;
+    let ballX = 0;
 
-    for(let i =1; i <= 10; i++){
+    for(let i =1; i <= itterations; i++){
 
-        let radius = random(20, maxRadius);
+        let radius = random(15, maxRadius);
 
-        balls.push(new Ball(cWidth - (maxRadius*2)*i , cHeight - 100, radius, 0.8, randomNegativePositive(0, 300), 0, 1));
+        balls.push(new Ball(ballX += spacePerBall , 100, radius, 0.9, randomNegativePositive(0, 300), 0, 1 * radius));
     }
 }
 
@@ -213,7 +198,7 @@ function update(){
     
     for(let i =0; i< balls.length; i++){
 
-        balls[i].update(this, i);
+        balls[i].update(i);
     }
 
     balls = [];
