@@ -3,7 +3,7 @@ var animationEngine = new AnimationEngine();
 animationEngine.setAnimationFrameCallback(update);
 
 var EARTH_ACCELERATION = 200; //m/s  pixel = meter
-var EARTH_FRICTION_FACTOR = 0.95;
+var BOUNCY_FACTOR = 1;
 
 var cHeight = canvas.height;
 var cWidth = canvas.width;
@@ -59,7 +59,7 @@ function collision(i){
         //force set away from colision
         newBall.y = cHeight - newBall.radius;
 
-        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
+        newBall.v_x = newBall.v_x * BOUNCY_FACTOR;
     //ceiling
     }else if(newBall.y <= newBall.radius){
 
@@ -112,7 +112,7 @@ function collision(i){
                 //taking distance for x and y to impact, substracting 1 from the distance to make sure no secondary collision will be detected
                 let x_y_to_collide = polarToCartesian(polarDistance.r - intersection - 1, polarDistance.t);
 
-                //assigning true coordinates of collision (moment of "physica" impact)
+                //assigning true coordinates of collision (moment of "physical" impact)
                 newBall.x = b0.prev_x + x_y_to_collide.x;
                 newBall.y = b0.prev_y + x_y_to_collide.y;
                 b0.x = b0.prev_x + x_y_to_collide.x;
@@ -156,7 +156,7 @@ function setup(){
 
         let radius = random(2, maxRadius);
 
-        balls.push(new Ball(ballX += spacePerBall , 100, radius, 0.9, randomNegativePositive(0, 300), 0, 1 * radius));
+        balls.push(new Ball(ballX += spacePerBall , 100, radius, BOUNCY_FACTOR, randomNegativePositive(0, 300), 0, 1 * radius));
     }
 }
 
