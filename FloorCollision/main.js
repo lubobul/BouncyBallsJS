@@ -3,7 +3,7 @@ var animationEngine = new AnimationEngine();
 animationEngine.setAnimationFrameCallback(update);
 
 var EARTH_ACCELERATION = 200; //m/s  pixel = meter
-var BOUNCY_FACTOR = 0.8;
+var BOUNCY_FACTOR = 0.9;
 
 var cHeight = canvas.height;
 var cWidth = canvas.width;
@@ -136,6 +136,70 @@ function collision(i){
 
     //add new object to the new collection
     tmpBalls.push(newBall);
+
+    detectFloorCollision(newBall);
+}
+
+function detectFloorCollision(ball){
+
+    if(ball.x > limFloorXMin && ball.x < limFloorXMax){
+
+        let dist = Math.abs(ball.y - floorFunction(ball.x, limFloorYMin));
+
+        if(dist <= ball.radius){
+            
+            let tetha = cartesianToPolar(limFloorXMax - limFloorXMin, limFloorYMax - limFloorYMin).t;
+
+            let n_x = -Math.sin(tetha);
+            let n_y = Math.cos(tetha);
+            
+            let dot = ball.v_x * n_x + ball.v_y * n_y;
+
+            ball.v_x = (ball.v_x - 2 * dot * n_x) * BOUNCY_FACTOR;
+            ball.v_y = (ball.v_y - 2 * dot * n_y) * BOUNCY_FACTOR;
+ 
+            // ball.x += (Math.sign(ball.v_x) * Math.abs(ball.v_x / ball.v_y) * ball.radius / ball.v_y);
+            // ball.y += (Math.sign(ball.v_y) * Math.abs(ball.v_y / ball.v_x) * ball.radius / ball.v_x);
+        }
+    }
+}
+
+function floorFunction(x, a){
+
+    return 0.1 * x + a;
+}
+
+var limFloorXMin = 0;
+var limFloorXMax = 0;
+var limFloorYMin = 0;
+var limFloorYMax = 0;
+
+function drawFloor(xStart, yStart, length){
+
+    limFloorXMin = xStart;
+    limFloorYMin = yStart;
+
+    let x0 = xStart;
+    let y0 = floorFunction(x0, yStart);;
+
+    for(let x = 1; x < length; x++){
+
+        let x1 = x + xStart;
+        let y1 = floorFunction(x1, yStart);
+        
+        drawLine(x0 , y0, x1 , y1);
+
+        x0 = x1;
+        y0 = y1;     
+    }
+
+    limFloorXMax = x0;
+    limFloorYMax = y0;
+}
+
+function mouseClicked(){
+    
+    console.log(this);
 }
 
 //reset collections
@@ -144,16 +208,20 @@ var tmpBalls = [];
 
 //setup the engine
 function setup(){
+
+    setLeftClickCallback(mouseClicked);
+
     animationEngine.start();
 
-    let itterations = 20;
-    let maxRadius = 15;
-    let spacePerBall = cWidth / itterations;
+    let numberOfBalls = 1;
+    let maxRadius = 20;
+    let minRadius = 10;
+    let spacePerBall = cWidth / numberOfBalls;
     let ballX = 0;
 
-    for(let i =1; i <= itterations; i++){
+    for(let i =1; i <= numberOfBalls; i++){
 
-        let radius = random(2, maxRadius);
+        let radius = random(minRadius, maxRadius);
 
         balls.push(new Ball(ballX += spacePerBall , 100, radius, BOUNCY_FACTOR, randomNegativePositive(0, 300), 0, 1 * radius));
     }
@@ -163,6 +231,8 @@ function setup(){
 function update(){
 
     clearCanvas();
+
+    drawFloor(0, 400, 600);
     
     for(let i =0; i< balls.length; i++){
 

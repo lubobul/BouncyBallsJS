@@ -2,9 +2,6 @@
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
 
-//Subscribe mouse down on the canvas
-canvas.addEventListener("mousedown", mouseDown, false);
-
 function mouseDown(e)
 {
     //right click
@@ -12,21 +9,38 @@ function mouseDown(e)
      
     }
     else{
-        this.coordinates = getMouseCoordinates(e);
-
 
         if(onLeftClickCallback){
-
-            onLeftClickCallback.call(this);
+            let coordinates = getMouseCoordinates(e);
+            onLeftClickCallback.call(coordinates);
         }
+    }
+}
+
+function mouseMove(e){
+
+    if(onMouseMoveCallback){
+        let coordinates = getMouseCoordinates(e);
+        onMouseMoveCallback.call(coordinates);
     }
 }
 
 var onLeftClickCallback = null;
 
 function setLeftClickCallback(callback){
+    
+    //Subscribe mouse down on the canvas
+    canvas.addEventListener("mousedown", mouseDown, false);
+    onLeftClickCallback = callback;
+}
 
-   onLeftClickCallback = callback;
+var onMouseMoveCallback = null;
+
+function setOnMouseMoveCallback(callback){
+
+    //Subscribe mouse down on the canvas
+    canvas.addEventListener("mousemove", mouseMove, false);
+    onMouseMoveCallback = callback;
 }
 
 /**
@@ -52,7 +66,7 @@ function getMouseCoordinates(e){
     y -= canvas.offsetTop;
 
     //invert x axis (canvas is inverted by css : transform: scaleX(-1))
-    x = canvas.width - x;
+    //x = canvas.width - x;
 
     return {x, y}
 }
