@@ -155,11 +155,32 @@ function detectFloorCollision(ball){
             
             let dot = ball.v_x * n_x + ball.v_y * n_y;
 
-            ball.v_x = (ball.v_x - 2 * dot * n_x) * BOUNCY_FACTOR;
-            ball.v_y = (ball.v_y - 2 * dot * n_y) * BOUNCY_FACTOR;
+            ball.v_x = (ball.v_x - 2 * dot * n_x);
+            ball.v_y = (ball.v_y - 2 * dot * n_y);
+
+            //avoid falling through floor
+            let intersection = ball.radius - dist;
+
+            //taking the angle of movement before collision, dx and dy within dt
+            let polarDistance = cartesianToPolar(ball.x - ball.prev_x, ball.y - ball.prev_y);
+            //taking distance for x and y to impact, substracting 1 from the distance to make sure no secondary collision will be detected
+            let x_y_to_collide = polarToCartesian(polarDistance.r - intersection - 1, polarDistance.t);
+
+            ball.x = ball.prev_x + x_y_to_collide.x;
+            ball.y = ball.prev_y + x_y_to_collide.y;
  
-            // ball.x += (Math.sign(ball.v_x) * Math.abs(ball.v_x / ball.v_y) * ball.radius / ball.v_y);
-            // ball.y += (Math.sign(ball.v_y) * Math.abs(ball.v_y / ball.v_x) * ball.radius / ball.v_x);
+            //taking angle of movement after impact
+            let new_velocity_tetha = cartesianToPolar(ball.v_x, ball.v_y).t;
+            //taking distance for x and y after impact
+            let x_y_bounced = polarToCartesian(intersection, new_velocity_tetha);
+            
+            //assigning true coordinates after collision (distance the object has travelled after impact within dt 1 itteration)
+            ball.x = ball.x + x_y_bounced.x;
+            ball.y = ball.y + x_y_bounced.y;
+
+            ball.v_x = ball.v_x * ball.bouncyFactor;
+            ball.v_y = ball.v_y * ball.bouncyFactor;
+
         }
     }
 }
@@ -213,7 +234,7 @@ function setup(){
 
     animationEngine.start();
 
-    let numberOfBalls = 1;
+    let numberOfBalls = 10;
     let maxRadius = 20;
     let minRadius = 10;
     let spacePerBall = cWidth / numberOfBalls;
@@ -232,7 +253,7 @@ function update(){
 
     clearCanvas();
 
-    drawFloor(0, 400, 600);
+    drawFloor(200, 300, 200);
     
     for(let i =0; i< balls.length; i++){
 
