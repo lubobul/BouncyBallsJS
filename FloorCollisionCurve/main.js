@@ -144,11 +144,12 @@ function detectFloorCollision(ball){
 
     if(ball.x > limFloorXMin && ball.x < limFloorXMax){
 
-        let dist = Math.abs(ball.y - floorFunction(ball.x, limFloorYMin));
+        let dist = Math.abs(ball.y - floorFunction(ball.x, limFloorYMin, _b, _length));
 
         if(dist <= ball.radius){
             
-            let tetha = cartesianToPolar(limFloorXMax - limFloorXMin, limFloorYMax - limFloorYMin).t;
+            //angle of tangent to the floor function using the derivative
+            let tetha =  Math.atan( derivativeOfFloorFunction (ball.x, _b, _length)); 
 
             let n_x = -Math.sin(tetha);
             let n_y = Math.cos(tetha);
@@ -178,16 +179,11 @@ function detectFloorCollision(ball){
             ball.x = ball.x + x_y_bounced.x;
             ball.y = ball.y + x_y_bounced.y;
 
-            //ball.v_x = ball.v_x * ball.bouncyFactor;
-            //ball.v_y = ball.v_y * ball.bouncyFactor;
+            ball.v_x = ball.v_x * ball.bouncyFactor;
+            ball.v_y = ball.v_y * ball.bouncyFactor;
 
         }
     }
-}
-
-function floorFunction(x, a){
-
-    return 0.1 * x + a;
 }
 
 var limFloorXMin = 0;
@@ -195,18 +191,32 @@ var limFloorXMax = 0;
 var limFloorYMin = 0;
 var limFloorYMax = 0;
 
-function drawFloor(xStart, yStart, length){
+function floorFunction(x, a, b, c){
 
+    return (Math.sin(x * b) * c) + a;
+}
+
+function derivativeOfFloorFunction(x, b, c){
+
+    return b * c * Math.cos(b * x);
+}
+
+var _b = 0;
+var _length = 0;
+
+function drawFloor(xStart, yStart, length){
+    _length = length;
     limFloorXMin = xStart;
     limFloorYMin = yStart;
-
+    
+    _b = (Math.PI /2) / length; 
     let x0 = xStart;
-    let y0 = floorFunction(x0, yStart);;
+    let y0 = floorFunction(x0, yStart, _b, length);;
 
     for(let x = 1; x < length; x++){
 
         let x1 = x + xStart;
-        let y1 = floorFunction(x1, yStart);
+        let y1 = floorFunction(x1, yStart, _b, length);
         
         drawLine(x0 , y0, x1 , y1);
 
@@ -215,7 +225,7 @@ function drawFloor(xStart, yStart, length){
     }
 
     limFloorXMax = x0;
-    limFloorYMax = y0;
+    limFloorYMax = Math.max(y0, limFloorYMax);
 }
 
 function mouseClicked(){
@@ -253,7 +263,7 @@ function update(){
 
     clearCanvas();
 
-    drawFloor(200, 350, 200);
+    drawFloor(100, 100, 300);
     
     for(let i =0; i< balls.length; i++){
 
