@@ -15,10 +15,10 @@ In this project I am experimenting with:
 
 ![motiontracking](https://user-images.githubusercontent.com/1053670/52283970-3261fc80-296c-11e9-8b73-ea86efb20402.gif)
 
-## Collision with straight function
+## Collision with function drawing a straight line
 
 ![straightfunction](https://user-images.githubusercontent.com/1053670/52284048-5a516000-296c-11e9-97ef-3fb3c0ff0d60.gif)
 
-## Collision with curved function
+## Collision with function drawing a curve
 
 ![curvedfunction](https://user-images.githubusercontent.com/1053670/52284069-62110480-296c-11e9-823f-81a1df7b5633.gif)
