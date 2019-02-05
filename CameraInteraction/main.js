@@ -62,8 +62,11 @@ class Ball{
         this.y += this.v_y * animationEngine.deltaTime;
         this.x += this.v_x * animationEngine.deltaTime;
      
-        collision(i);
+        wallCollision(balls[i]);
+        
+        elasticCollision(i, balls);
 
+        blobCollision(balls[i]);
     }
 }
 
@@ -71,40 +74,10 @@ class Ball{
  * Detect collision 
  * @param {*} i
  */
-function collision(i){
-    
-    let b0 = balls[i];
-    let newBall = new Ball(b0.x, b0.y, b0.radius, b0.bouncyFactor, b0.v_x, b0.v_y, b0.mass);
-
-     //floor
-    if(newBall.y >= cHeight - newBall.radius){
-
-        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
-        //force set away from colision
-        newBall.y = cHeight - newBall.radius;
-
-        newBall.v_x = newBall.v_x * EARTH_FRICTION_FACTOR;
-    //ceiling
-    }else if(newBall.y <= newBall.radius){
-
-        newBall.v_y = -newBall.v_y * newBall.bouncyFactor;
-        newBall.y = newBall.radius + 1;
-    }
-    //left wall
-    if(newBall.x <= newBall.radius ){
-
-        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
-        newBall.x = newBall.radius + 1;
-    
-    //right wall
-    }else if(newBall.x >= cWidth - newBall.radius){
-        
-        newBall.v_x = -newBall.v_x * newBall.bouncyFactor;
-        newBall.x = cWidth - newBall.radius - 1;
-    }
+function blobCollision(ball){
 
     //here we transfer velocity from motion in camera to ball
-    if(distance(newBall.x, newBall.y, blob.x, blob.y) < newBall.radius){
+    if(distance(ball.x, ball.y, blob.x, blob.y) < ball.radius){
 
         let d_x = blob.x - blob.prev_x;
         let d_y = blob.y - blob.prev_y;
@@ -113,47 +86,13 @@ function collision(i){
         blob.v_y = d_y / animationEngine.deltaTime; 
         
         //clamping motion velocity  
-        newBall.v_x += (min(Math.abs(blob.v_x), MOTION_MAX_VELOCITY) * Math.sign(blob.v_x));
-        newBall.v_y += (min(Math.abs(blob.v_y), MOTION_MAX_VELOCITY) * Math.sign(blob.v_y));
+        ball.v_x += (min(Math.abs(blob.v_x), MOTION_MAX_VELOCITY) * Math.sign(blob.v_x));
+        ball.v_y += (min(Math.abs(blob.v_y), MOTION_MAX_VELOCITY) * Math.sign(blob.v_y));
         
     }
-
-    for(var j =0; j< balls.length; j++){
-        
-        if(i != j){
-        
-            let b1 = balls[j];
-
-            if(distance(b0.x, b0.y, b1.x, b1.y) <= b0.radius + b1.radius){
-                
-                let b0_v = scalarSize(b0.v_x, b0.v_y);
-                let b1_v = scalarSize(b1.v_x, b1.v_y);
-
-                let phi = cartesianToPolar(b0.x - b1.x, b0.y - b1.y).t;
-                let tetha0 = cartesianToPolar(b0.v_x, b0.v_y).t;
-                let tetha1 = cartesianToPolar(b1.v_x, b1.v_y).t;
-
-                newBall.v_x = ( (b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
-                                * Math.cos(phi) - b0_v*Math.sin(tetha0 - phi) * Math.sin(phi);
-                                
-                newBall.v_y = ((b0_v * Math.cos(tetha0 - phi) * (b0.mass - b1.mass) + (2 * b1.mass * b1_v * Math.cos(tetha1 - phi) )) / (b0.mass + b1.mass) ) 
-                                * Math.sin(phi) - b0_v*Math.sin(tetha0 - phi) * Math.cos(phi);
-                
-                //Using simple restoration of coordinates after collision, because the proper one doesn't work well with the blob
-                newBall.x = b0.prev_x;
-                newBall.y = b0.prev_y;
-                b0.x = b0.prev_x;
-                b0.y = b0.prev_y;                   
-            }
-        }
-    }
-    
-    tmpBalls.push(newBall);
-
 }
 
 var balls = [];
-var tmpBalls = [];
 
 /**
  * Setups the app
@@ -200,15 +139,6 @@ function update(){
 
         balls[i].update(i);
     }
-
-    balls = [];
-
-    for(let i =0; i< tmpBalls.length; i++){
-
-        balls.push(tmpBalls[i]);
-    }
-
-    tmpBalls = [];
 }
 
 //Blob holding motion detection
