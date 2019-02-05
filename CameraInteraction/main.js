@@ -27,7 +27,7 @@ var EARTH_FRICTION_FACTOR = 0.95;
 var cHeight = canvas.height;
 var cWidth = canvas.width;
 
-var MOTION_MAX_VELOCITY = 300;
+var MOTION_MAX_VELOCITY = 100;
 var BLOB_MIN_SIZE = 100;
 
 class Ball{
@@ -104,7 +104,7 @@ function collision(i){
     }
 
     //here we transfer velocity from motion in camera to ball
-    if(distance(newBall.x, newBall.y, blob.x, blob.y) < 4 * newBall.radius && blob.prev_x + blob.prev_y > 0 && blob.x + blob.y > 0){
+    if(distance(newBall.x, newBall.y, blob.x, blob.y) < newBall.radius){
 
         let d_x = blob.x - blob.prev_x;
         let d_y = blob.y - blob.prev_y;
@@ -225,9 +225,6 @@ function traverseBitmap(pixels, oldPixels) {
     
     blob.prev_x = blob.x;
     blob.prev_y = blob.y;
-
-    blob.x = 0;
-    blob.y = 0;
 
     //increment for loops with x/y += 4, because in bitmapt [0]-R, [1]-G, [2]-B, [3]-Alpha channel
     for (let x = 0; x < cWidth; x++) {
