@@ -7,6 +7,8 @@ In this project I am experimenting with:
 3. Collision between N balls and a straight line defined by a function
 4. Collision between N balls and a curve defined by a function
 
+Written from scratch in Vanilla JS
+
 ## Elastic collision
 
 ![elasticcollision](https://user-images.githubusercontent.com/1053670/52283886-08103f00-296c-11e9-825f-2678e6968771.gif)
