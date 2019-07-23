@@ -52,7 +52,7 @@ function detectFloorCollision(ball){
 
         let dist = Math.abs(ball.y - floorFunction(ball.x, limFloorYMin, _b, _length));
 
-        if(dist <= ball.radius){
+        if(dist < ball.radius){
             
             //angle of tangent to the floor function using the derivative
             let tetha =  Math.atan( derivativeOfFloorFunction (ball.x, _b, _length)); 
@@ -70,8 +70,7 @@ function detectFloorCollision(ball){
 
             //taking the angle of movement before collision, dx and dy within dt
             let polarDistance = cartesianToPolar(ball.x - ball.prev_x, ball.y - ball.prev_y);
-            //taking distance for x and y to impact, substracting 1 from the distance to make sure no secondary collision will be detected
-            let x_y_to_collide = polarToCartesian(polarDistance.r - intersection - 1, polarDistance.t);
+            let x_y_to_collide = polarToCartesian(polarDistance.r - intersection, polarDistance.t);
 
             ball.x = ball.prev_x + x_y_to_collide.x;
             ball.y = ball.prev_y + x_y_to_collide.y;
